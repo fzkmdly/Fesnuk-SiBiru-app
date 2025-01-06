@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lamp Control</title>
-    <link rel="shortcut icon" type="image/png" href="/favicon.ico">
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -18,9 +17,6 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-image: url('/img/Oleng.jpeg');
-            background-repeat: no-repeat;
-            background-size: cover;
         }
         .container {
             background: white;
@@ -46,29 +42,40 @@
         .lamp-status.off {
             color: #dc3545;
         }
-        .switch-btn {
-            padding: 12px 25px;
-            font-size: 1rem;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
-        .switch-btn:hover {
-            background-color: #0056b3;
-            transform: scale(1.05);
-        }
-        .icon {
-            font-size: 4rem;
+        .switch-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
             margin: 20px 0;
         }
-        .icon.on {
-            color: #ffc107;
+        .switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background-color: #ccc;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
         }
-        .icon.off {
-            color: #6c757d;
+        .switch::before {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+        .switch.on {
+            background-color: #28a745;
+        }
+        .switch.on::before {
+            transform: translateX(30px);
+        }
+        form {
+            display: none; /* Form is hidden; status toggled via JavaScript */
         }
         footer {
             margin-top: 20px;
@@ -80,20 +87,44 @@
 <body>
     <div class="container">
         <h1>Lamp Control</h1>
-        <div class="icon <?= $status === 'ON' ? 'on' : 'off' ?>">
-            <?= $status === 'ON' ? '💡' : '🔌' ?>
-        </div>
         <div class="lamp-status <?= strtolower($status) ?>">
-            Lamp is currently: <?= esc($status) ?>
+            Lamp is currently: <span><?= esc($status) ?></span>
         </div>
-        <form action="/toggle" method="post">
-            <button type="submit" class="switch-btn">
-                <?= $status === 'ON' ? 'Turn OFF' : 'Turn ON' ?>
-            </button>
-        </form>
+        <div class="switch-container">
+            <div class="switch <?= strtolower($status) ?>" id="lamp-switch"></div>
+        </div>
     </div>
     <footer>
         © <?= date('Y') ?> Lamp Control System
     </footer>
+
+    <script>
+        // Toggle switch and update the status
+        const switchElement = document.getElementById('lamp-switch');
+        let lampStatus = "<?= $status ?>";
+
+        switchElement.addEventListener('click', () => {
+            // Toggle status
+            lampStatus = lampStatus === 'ON' ? 'OFF' : 'ON';
+            updateUI();
+            sendToggleRequest();
+        });
+
+        function updateUI() {
+            // Update switch UI
+            switchElement.classList.toggle('on', lampStatus === 'ON');
+            // Update text status
+            document.querySelector('.lamp-status span').textContent = lampStatus;
+            document.querySelector('.lamp-status').classList.toggle('on', lampStatus === 'ON');
+            document.querySelector('.lamp-status').classList.toggle('off', lampStatus === 'OFF');
+        }
+
+        function sendToggleRequest() {
+            // Send a POST request to toggle the lamp
+            fetch('/toggle', { method: 'POST' })
+                .then(response => response.text())
+                .catch(error => console.error('Error toggling lamp:', error));
+        }
+    </script>
 </body>
 </html>
