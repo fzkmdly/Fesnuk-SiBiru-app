@@ -4,8 +4,20 @@ namespace App\Controllers;
 
 class Home extends BaseController
 {
-    public function index(): string
+    public function index()
     {
-        return view('welcome_message');
+        $status = session()->get('status') ?? 'OFF';
+
+        return view('LampSwitch', [
+            'status' => $status,
+        ]);
+    }
+
+    public function toggle()
+    {
+        $status = session()->get('status') === 'ON' ? 'OFF' : 'ON';
+        session()->set('status', $status);
+
+        return redirect()->to('/');
     }
 }
